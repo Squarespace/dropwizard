@@ -19,10 +19,7 @@
     <modules>
         <module>dropwizard-core</module>
         <module>dropwizard-client</module>
-        <module>dropwizard-db</module>
-        <module>dropwizard-jdbi</module>
         <module>dropwizard-auth</module>
-        <module>dropwizard-forms</module>
         <module>dropwizard-testing</module>
         <module>dropwizard-util</module>
         <module>dropwizard-jackson</module>
