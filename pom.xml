@@ -18,7 +18,6 @@
 
     <modules>
         <module>dropwizard-core</module>
-        <module>dropwizard-client</module>
         <module>dropwizard-auth</module>
         <module>dropwizard-testing</module>
         <module>dropwizard-util</module>
@@ -39,7 +38,7 @@
         <dropwizard.url>http://www.dropwizard.io/${project.version}</dropwizard.url>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <metrics3.version>3.0.2</metrics3.version>
+        <metrics3.version>3.2.6</metrics3.version>
         <jersey.version>1.19.4</jersey.version>
         <jackson.api.version>2.3.0</jackson.api.version>
         <jackson.version>2.3.3</jackson.version>

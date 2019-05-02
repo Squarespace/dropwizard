@@ -48,7 +48,7 @@
             <version>${jersey.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.codahale.metrics</groupId>
+            <groupId>io.dropwizard.metrics</groupId>
             <artifactId>metrics-jersey</artifactId>
             <version>${metrics3.version}</version>
             <exclusions>
