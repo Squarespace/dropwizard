@@ -32,6 +32,7 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.ErrorHandler;
 import org.eclipse.jetty.server.handler.RequestLogHandler;
 import org.eclipse.jetty.server.handler.StatisticsHandler;
+import org.eclipse.jetty.server.handler.gzip.GzipHandler;
 import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.setuid.RLimit;
 import org.eclipse.jetty.setuid.SetUIDListener;
@@ -427,24 +428,22 @@ public abstract class AbstractServerFactory implements ServerFactory {
         handler.addFilter(AllowedMethodsFilter.class, "/*", EnumSet.of(DispatcherType.REQUEST))
                 .setInitParameter(AllowedMethodsFilter.ALLOWED_METHODS_PARAM, Joiner.on(',').join(allowedMethods));
         handler.addFilter(ThreadNameFilter.class, "/*", EnumSet.of(DispatcherType.REQUEST));
-        if (gzip.isEnabled()) {
-            final FilterHolder holder = new FilterHolder(gzip.build());
-            
-            // GzipFilter#init() will overwrite our Compressed MIME types if we don't do this.
-            Set<String> compressedMimeTypes = gzip.getCompressedMimeTypes();
-            if (compressedMimeTypes != null) {
-                holder.setInitParameter("mimeTypes", "");
-            }
-            
-            handler.addFilter(holder, "/*", EnumSet.allOf(DispatcherType.class));
-        }
+
         if (jerseyContainer != null) {
             jersey.register(new JacksonMessageBodyProvider(objectMapper, validator));
             handler.addServlet(new NonblockingServletHolder(jerseyContainer), jersey.getUrlPattern());
         }
         final InstrumentedHandler instrumented = new InstrumentedHandler(metricRegistry);
         instrumented.setServer(server);
-        instrumented.setHandler(handler);
+        
+        Handler tzeHandler = handler;
+        if (gzip.isEnabled()) {
+            GzipHandler gzipHandler = gzip.build();
+            gzipHandler.setHandler(handler);
+            tzeHandler = gzipHandler;
+        }
+        
+        instrumented.setHandler(tzeHandler);
         return instrumented;
     }
 

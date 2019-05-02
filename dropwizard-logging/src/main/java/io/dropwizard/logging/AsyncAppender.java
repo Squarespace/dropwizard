@@ -1,16 +1,17 @@
 package io.dropwizard.logging;
 
+import java.util.List;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import com.google.common.collect.Lists;
+import com.google.common.collect.Queues;
+
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.Appender;
 import ch.qos.logback.core.AppenderBase;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Queues;
 import io.dropwizard.util.Duration;
-import org.eclipse.jetty.util.ConcurrentArrayBlockingQueue;
-
-import java.util.List;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * An asynchronous appender. Log entries are added to an in-memory queue and an offline thread
@@ -85,11 +86,11 @@ public class AsyncAppender extends AppenderBase<ILoggingEvent> {
         return delegate;
     }
 
-    private ConcurrentArrayBlockingQueue<ILoggingEvent> buildQueue(int batchSize, boolean bounded) {
+    private BlockingQueue<ILoggingEvent> buildQueue(int batchSize, boolean bounded) {
         if (bounded) {
-            return new ConcurrentArrayBlockingQueue.Bounded<>(batchSize * 2);
+            return new ArrayBlockingQueue<>(batchSize * 2);
         }
-        return new ConcurrentArrayBlockingQueue.Unbounded<>();
+        return new ArrayBlockingQueue<>(Integer.MAX_VALUE);
     }
 
     @Override

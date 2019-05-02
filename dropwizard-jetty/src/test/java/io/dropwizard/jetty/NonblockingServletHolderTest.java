@@ -39,7 +39,7 @@ public class NonblockingServletHolderTest {
 
         final InOrder inOrder = inOrder(baseRequest, servlet);
 
-        inOrder.verify(baseRequest).setAsyncSupported(false);
+        inOrder.verify(baseRequest).setAsyncSupported(false, "temporarilyDisablesAsyncRequestsIfDisabled");
         inOrder.verify(servlet).service(request, response);
     }
 

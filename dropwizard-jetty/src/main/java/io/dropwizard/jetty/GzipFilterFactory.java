@@ -1,17 +1,23 @@
 package io.dropwizard.jetty;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.Sets;
-import io.dropwizard.util.Size;
+import static com.google.common.base.Preconditions.checkNotNull;
 
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.zip.Deflater;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+
+import org.eclipse.jetty.http.HttpField;
+import org.eclipse.jetty.http.HttpHeader;
+import org.eclipse.jetty.server.handler.gzip.GzipHandler;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.Sets;
+
+import io.dropwizard.util.Size;
 
 public class GzipFilterFactory {
     private boolean enabled = true;
@@ -22,7 +28,6 @@ public class GzipFilterFactory {
     @NotNull
     private Size bufferSize = Size.kilobytes(8);
 
-    private Set<String> excludedUserAgents = Sets.newHashSet();
     private Set<Pattern> excludedUserAgentPatterns = Sets.newHashSet();
     private Set<String> compressedMimeTypes = Sets.newHashSet();
     private Set<String> includedMethods = Sets.newHashSet();
@@ -62,17 +67,7 @@ public class GzipFilterFactory {
     public void setBufferSize(Size size) {
         this.bufferSize = checkNotNull(size);
     }
-
-    @JsonProperty
-    public Set<String> getExcludedUserAgents() {
-        return excludedUserAgents;
-    }
-
-    @JsonProperty
-    public void setExcludedUserAgents(Set<String> userAgents) {
-        this.excludedUserAgents = userAgents;
-    }
-
+    
     @JsonProperty
     public Set<String> getCompressedMimeTypes() {
         return compressedMimeTypes;
@@ -133,36 +128,36 @@ public class GzipFilterFactory {
         this.vary = vary;
     }
 
-    public BiDiGzipFilter build() {
-        final BiDiGzipFilter filter = new BiDiGzipFilter();
+    public GzipHandler build() {
+        final GzipHandler filter = new GzipHandler() {
+            @Override
+            protected HttpField getVaryField() {
+                if (vary != null) {
+                    return new HttpField(HttpHeader.VARY, vary);
+                }
+                return super.getVaryField();
+            }
+        };
+        
         filter.setMinGzipSize((int) minimumEntitySize.toBytes());
-
-        filter.setBufferSize((int) bufferSize.toBytes());
-
-        filter.setDeflateCompressionLevel(deflateCompressionLevel);
-
-        if (excludedUserAgents != null) {
-            filter.setExcludedAgents(excludedUserAgents);
-        }
-
+        
+        filter.setInflateBufferSize((int) bufferSize.toBytes());
+        
+        filter.setCompressionLevel(deflateCompressionLevel);
+        
         if (compressedMimeTypes != null) {
-            filter.setMimeTypes(compressedMimeTypes);
+            filter.addIncludedMimeTypes(compressedMimeTypes.toArray(new String[0]));
         }
 
         if (includedMethods != null) {
-            filter.setMethods(includedMethods);
+            filter.addIncludedMethods(includedMethods.toArray(new String[0]));
         }
 
         if (excludedUserAgentPatterns != null) {
-            filter.setExcludedAgentPatterns(excludedUserAgentPatterns);
+            filter.addExcludedAgentPatterns(excludedUserAgentPatterns.toArray(new String[0]));
         }
 
-        if (vary != null) {
-            filter.setVary(vary);
-        }
-
-        filter.setDeflateNoWrap(gzipCompatibleDeflation);
-
+        filter.setCheckGzExists(gzipCompatibleDeflation);
         return filter;
     }
 }

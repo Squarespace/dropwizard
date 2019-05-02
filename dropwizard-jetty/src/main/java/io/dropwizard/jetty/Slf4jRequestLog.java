@@ -6,6 +6,7 @@ import ch.qos.logback.classic.spi.LoggingEvent;
 import ch.qos.logback.core.spi.AppenderAttachableImpl;
 import org.eclipse.jetty.server.AbstractNCSARequestLog;
 import org.eclipse.jetty.server.RequestLog;
+import org.eclipse.jetty.server.Slf4jRequestLogWriter;
 
 import java.io.IOException;
 import java.util.TimeZone;
@@ -16,13 +17,19 @@ import java.util.TimeZone;
 public class Slf4jRequestLog extends AbstractNCSARequestLog {
     private final AppenderAttachableImpl<ILoggingEvent> appenders;
 
+    public Slf4jRequestLog(AppenderAttachableImpl<ILoggingEvent> appenders, TimeZone timeZone) {
+        this(new Slf4jRequestLogWriter(), appenders, timeZone);
+    }
+    
     /**
      * Creates a new request log.
      *
      * @param appenders     the appenders to which requests will be logged
      * @param timeZone      the timezone to which timestamps will be converted
      */
-    public Slf4jRequestLog(AppenderAttachableImpl<ILoggingEvent> appenders, TimeZone timeZone) {
+    public Slf4jRequestLog(Slf4jRequestLogWriter writer, AppenderAttachableImpl<ILoggingEvent> appenders, TimeZone timeZone) {
+        super(writer);
+      
         this.appenders = appenders;
 
         setLogLatency(true);

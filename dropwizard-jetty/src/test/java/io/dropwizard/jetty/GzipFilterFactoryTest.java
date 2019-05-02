@@ -44,12 +44,6 @@ public class GzipFilterFactoryTest {
     }
 
     @Test
-    public void hasExcludedUserAgents() throws Exception {
-        assertThat(gzip.getExcludedUserAgents())
-                .isEqualTo(ImmutableSet.of("IE"));
-    }
-
-    @Test
     public void hasCompressedMimeTypes() throws Exception {
         assertThat(gzip.getCompressedMimeTypes())
                 .isEqualTo(ImmutableSet.of("text/plain"));
