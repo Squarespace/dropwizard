@@ -3,6 +3,7 @@ package io.dropwizard.logging;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.common.collect.Lists;
@@ -90,7 +91,7 @@ public class AsyncAppender extends AppenderBase<ILoggingEvent> {
         if (bounded) {
             return new ArrayBlockingQueue<>(batchSize * 2);
         }
-        return new ArrayBlockingQueue<>(Integer.MAX_VALUE);
+        return new LinkedBlockingQueue<>();
     }
 
     @Override

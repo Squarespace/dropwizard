@@ -3,7 +3,6 @@ package io.dropwizard.jetty;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Set;
-import java.util.regex.Pattern;
 import java.util.zip.Deflater;
 
 import javax.validation.constraints.Max;
@@ -28,7 +27,7 @@ public class GzipFilterFactory {
     @NotNull
     private Size bufferSize = Size.kilobytes(8);
 
-    private Set<Pattern> excludedUserAgentPatterns = Sets.newHashSet();
+    private Set<String> excludedUserAgentPatterns = Sets.newHashSet();
     private Set<String> compressedMimeTypes = Sets.newHashSet();
     private Set<String> includedMethods = Sets.newHashSet();
     private boolean gzipCompatibleDeflation = true;
@@ -99,12 +98,12 @@ public class GzipFilterFactory {
     }
 
     @JsonProperty
-    public Set<Pattern> getExcludedUserAgentPatterns() {
+    public Set<String> getExcludedUserAgentPatterns() {
         return excludedUserAgentPatterns;
     }
 
     @JsonProperty
-    public void setExcludedUserAgentPatterns(Set<Pattern> patterns) {
+    public void setExcludedUserAgentPatterns(Set<String> patterns) {
         this.excludedUserAgentPatterns = patterns;
     }
 
