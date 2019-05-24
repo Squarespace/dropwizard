@@ -1,5 +1,30 @@
 package io.dropwizard.server;
 
+import java.io.IOException;
+import java.util.EnumSet;
+import java.util.Set;
+import java.util.concurrent.BlockingQueue;
+import java.util.regex.Pattern;
+
+import javax.annotation.Nullable;
+import javax.servlet.DispatcherType;
+import javax.validation.Valid;
+import javax.validation.Validator;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+
+import org.eclipse.jetty.server.Handler;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.handler.ErrorHandler;
+import org.eclipse.jetty.server.handler.RequestLogHandler;
+import org.eclipse.jetty.server.handler.StatisticsHandler;
+import org.eclipse.jetty.setuid.RLimit;
+import org.eclipse.jetty.setuid.SetUIDListener;
+import org.eclipse.jetty.util.BlockingArrayQueue;
+import org.eclipse.jetty.util.thread.ThreadPool;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.health.HealthCheckRegistry;
 import com.codahale.metrics.jetty9.InstrumentedHandler;
@@ -14,10 +39,10 @@ import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
 import com.google.common.io.Resources;
 import com.sun.jersey.spi.container.servlet.ServletContainer;
+
 import io.dropwizard.jersey.filter.AllowedMethodsFilter;
 import io.dropwizard.jersey.jackson.JacksonMessageBodyProvider;
 import io.dropwizard.jersey.setup.JerseyEnvironment;
-import io.dropwizard.jetty.GzipFilterFactory;
 import io.dropwizard.jetty.MutableServletContextHandler;
 import io.dropwizard.jetty.NonblockingServletHolder;
 import io.dropwizard.jetty.RequestLogFactory;
@@ -26,34 +51,6 @@ import io.dropwizard.servlets.ThreadNameFilter;
 import io.dropwizard.util.Duration;
 import io.dropwizard.validation.MinDuration;
 import io.dropwizard.validation.ValidationMethod;
-
-import org.eclipse.jetty.server.Handler;
-import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.handler.ErrorHandler;
-import org.eclipse.jetty.server.handler.RequestLogHandler;
-import org.eclipse.jetty.server.handler.StatisticsHandler;
-import org.eclipse.jetty.server.handler.gzip.GzipHandler;
-import org.eclipse.jetty.servlet.FilterHolder;
-import org.eclipse.jetty.setuid.RLimit;
-import org.eclipse.jetty.setuid.SetUIDListener;
-import org.eclipse.jetty.util.BlockingArrayQueue;
-import org.eclipse.jetty.util.thread.ThreadPool;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nullable;
-import javax.servlet.DispatcherType;
-import javax.servlet.Servlet;
-import javax.validation.Valid;
-import javax.validation.Validator;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-
-import java.io.IOException;
-import java.util.EnumSet;
-import java.util.Set;
-import java.util.concurrent.BlockingQueue;
-import java.util.regex.Pattern;
 
 // TODO: 5/15/13 <coda> -- add tests for AbstractServerFactory
 
@@ -190,10 +187,6 @@ public abstract class AbstractServerFactory implements ServerFactory {
     @NotNull
     private RequestLogFactory requestLog = new RequestLogFactory();
 
-    @Valid
-    @NotNull
-    private GzipFilterFactory gzip = new GzipFilterFactory();
-
     @Min(2)
     private int maxThreads = 1024;
 
@@ -242,16 +235,6 @@ public abstract class AbstractServerFactory implements ServerFactory {
     @JsonProperty("requestLog")
     public void setRequestLogFactory(RequestLogFactory requestLog) {
         this.requestLog = requestLog;
-    }
-
-    @JsonProperty("gzip")
-    public GzipFilterFactory getGzipFilterFactory() {
-        return gzip;
-    }
-
-    @JsonProperty("gzip")
-    public void setGzipFilterFactory(GzipFilterFactory gzip) {
-        this.gzip = gzip;
     }
 
     @JsonProperty
@@ -436,14 +419,7 @@ public abstract class AbstractServerFactory implements ServerFactory {
         final InstrumentedHandler instrumented = new InstrumentedHandler(metricRegistry);
         instrumented.setServer(server);
         
-        Handler tzeHandler = handler;
-        if (gzip.isEnabled()) {
-            GzipHandler gzipHandler = gzip.build();
-            gzipHandler.setHandler(handler);
-            tzeHandler = gzipHandler;
-        }
-        
-        instrumented.setHandler(tzeHandler);
+        instrumented.setHandler(handler);
         return instrumented;
     }
 
