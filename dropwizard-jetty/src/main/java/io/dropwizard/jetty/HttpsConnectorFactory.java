@@ -1,27 +1,6 @@
 package io.dropwizard.jetty;
 
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.jetty9.InstrumentedConnectionFactory;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonTypeName;
-import com.google.common.base.Strings;
-import com.google.common.collect.Iterables;
-
-import org.eclipse.jetty.http.HttpVersion;
-import org.eclipse.jetty.io.ByteBufferPool;
-import org.eclipse.jetty.server.*;
-import org.eclipse.jetty.util.ssl.SslContextFactory;
-import org.eclipse.jetty.util.thread.ScheduledExecutorScheduler;
-import org.eclipse.jetty.util.thread.Scheduler;
-import org.eclipse.jetty.util.thread.ThreadPool;
-import org.hibernate.validator.constraints.NotEmpty;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import io.dropwizard.validation.ValidationMethod;
-
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocketFactory;
+import static com.codahale.metrics.MetricRegistry.name;
 
 import java.io.File;
 import java.net.URI;
@@ -31,7 +10,33 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static com.codahale.metrics.MetricRegistry.name;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocketFactory;
+
+import org.eclipse.jetty.http.HttpVersion;
+import org.eclipse.jetty.io.ByteBufferPool;
+import org.eclipse.jetty.server.Connector;
+import org.eclipse.jetty.server.HttpConfiguration;
+import org.eclipse.jetty.server.HttpConnectionFactory;
+import org.eclipse.jetty.server.SecureRequestCustomizer;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.SslConnectionFactory;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
+import org.eclipse.jetty.util.thread.ScheduledExecutorScheduler;
+import org.eclipse.jetty.util.thread.Scheduler;
+import org.eclipse.jetty.util.thread.ThreadPool;
+import org.hibernate.validator.constraints.NotEmpty;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.jetty9.InstrumentedConnectionFactory;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import com.google.common.base.Strings;
+import com.google.common.collect.Iterables;
+
+import io.dropwizard.validation.ValidationMethod;
 
 /**
  * Builds HTTPS connectors (HTTP over TLS/SSL).
@@ -562,7 +567,9 @@ public class HttpsConnectorFactory extends HttpConnectorFactory {
     }
 
     protected SslContextFactory buildSslContextFactory() {
-        final SslContextFactory factory = new SslContextFactory(keyStorePath);
+        final SslContextFactory.Server factory = new SslContextFactory.Server();
+        factory.setKeyStorePath(keyStorePath);
+        
         final String keyStoreType = getKeyStoreType();
         if (keyStoreType.startsWith("Windows-")) {
             try {
