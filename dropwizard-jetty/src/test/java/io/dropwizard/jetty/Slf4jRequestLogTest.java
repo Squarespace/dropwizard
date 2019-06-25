@@ -5,6 +5,8 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.Appender;
 import ch.qos.logback.core.spi.AppenderAttachableImpl;
 import org.eclipse.jetty.http.HttpURI;
+import org.eclipse.jetty.http.MetaData;
+import org.eclipse.jetty.server.HttpChannel;
 import org.eclipse.jetty.server.HttpChannelState;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Response;
@@ -36,14 +38,21 @@ public class Slf4jRequestLogTest {
         when(request.getRemoteAddr()).thenReturn("10.0.0.1");
         when(request.getTimeStamp()).thenReturn(TimeUnit.SECONDS.toMillis(1353042047));
         when(request.getMethod()).thenReturn("GET");
-        when(request.getUri()).thenReturn(new HttpURI("/test/things?yay"));
+        when(request.getHttpURI()).thenReturn(new HttpURI("/test/things?yay"));
         when(request.getProtocol()).thenReturn("HTTP/1.1");
         when(request.getHttpChannelState()).thenReturn(channelState);
         when(request.getTimeStamp()).thenReturn(TimeUnit.SECONDS.toMillis(1353042048));
-
-        when(response.getStatus()).thenReturn(200);
+        
+        int status = 200;
+        MetaData.Response meta = mock(MetaData.Response.class);
+        when(meta.getStatus()).thenReturn(status);
+        
+        when(response.getCommittedMetaData()).thenReturn(meta);
+        when(response.getStatus()).thenReturn(status);
         when(response.getContentCount()).thenReturn(8290L);
 
+        HttpChannel httpChannel = mock(HttpChannel.class);
+        when(response.getHttpChannel()).thenReturn(httpChannel);
         appenders.addAppender(appender);
 
         slf4jRequestLog.start();

@@ -191,17 +191,17 @@ public class AssetServletTest {
         final long lastModifiedTime = response.getDateField(HttpHeaders.LAST_MODIFIED);
 
 
-        request.setHeader(HttpHeaders.IF_MODIFIED_SINCE, HttpFields.formatDate(lastModifiedTime));
+        request.setHeader(HttpHeaders.IF_MODIFIED_SINCE, DateGenerator.formatDate(lastModifiedTime));
         response = HttpTester.parseResponse(servletTester.getResponses(request.generate()));
         final int statusWithMatchingLastModifiedTime = response.getStatus();
 
         request.setHeader(HttpHeaders.IF_MODIFIED_SINCE,
-                          HttpFields.formatDate(lastModifiedTime - 100));
+                                DateGenerator.formatDate(lastModifiedTime - 100));
         response = HttpTester.parseResponse(servletTester.getResponses(request.generate()));
         final int statusWithStaleLastModifiedTime = response.getStatus();
 
         request.setHeader(HttpHeaders.IF_MODIFIED_SINCE,
-                          HttpFields.formatDate(lastModifiedTime + 100));
+                                DateGenerator.formatDate(lastModifiedTime + 100));
         response = HttpTester.parseResponse(servletTester.getResponses(request.generate()));
         final int statusWithRecentLastModifiedTime = response.getStatus();
 

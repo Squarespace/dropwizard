@@ -1,16 +1,21 @@
 package io.dropwizard.setup;
 
+import static org.fest.assertions.api.Assertions.assertThat;
+
+import java.io.PrintWriter;
+
+import javax.servlet.ServletRegistration;
+
+import org.eclipse.jetty.server.Server;
+import org.junit.Test;
+import org.mockito.Mockito;
+
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.health.HealthCheckRegistry;
 import com.google.common.collect.ImmutableMultimap;
+
 import io.dropwizard.jetty.MutableServletContextHandler;
 import io.dropwizard.servlets.tasks.Task;
-import org.junit.Test;
-
-import javax.servlet.ServletRegistration;
-import java.io.PrintWriter;
-
-import static org.fest.assertions.api.Assertions.assertThat;
 
 public class AdminEnvironmentTest {
     private final MutableServletContextHandler handler = new MutableServletContextHandler();
@@ -27,6 +32,7 @@ public class AdminEnvironmentTest {
         };
         env.addTask(task);
 
+        handler.setServer(Mockito.mock(Server.class));
         handler.start();
 
         final ServletRegistration registration = handler.getServletHandler()

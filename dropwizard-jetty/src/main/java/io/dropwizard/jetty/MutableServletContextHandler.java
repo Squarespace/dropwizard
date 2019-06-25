@@ -26,4 +26,16 @@ public class MutableServletContextHandler extends ServletContextHandler {
             this._options &= ~SESSIONS;
         }
     }
+    
+    public boolean isGzipEnabled() {
+        return (this._options & GZIP) != 0;
+    }
+
+    public void setGzipEnabled(boolean enabled) {
+        if (enabled) {
+            this._options |= GZIP;
+        } else {
+            this._options &= ~GZIP;
+        }
+    }
 }

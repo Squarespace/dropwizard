@@ -1,24 +1,29 @@
 package io.dropwizard.jetty;
 
-import com.google.common.collect.ImmutableMap;
-import org.eclipse.jetty.server.Connector;
-import org.eclipse.jetty.server.Handler;
-import org.eclipse.jetty.server.HttpChannel;
-import org.eclipse.jetty.server.Request;
-import org.eclipse.jetty.server.handler.ContextHandler;
-import org.junit.Test;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
+import org.eclipse.jetty.server.Connector;
+import org.eclipse.jetty.server.Handler;
+import org.eclipse.jetty.server.HttpChannel;
+import org.eclipse.jetty.server.Request;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.handler.ContextHandler;
+import org.junit.Test;
+
+import com.google.common.collect.ImmutableMap;
 
 public class RoutingHandlerTest {
     private final Connector connector1 = mock(Connector.class);
     private final Connector connector2 = mock(Connector.class);
-    private final Handler handler1 = spy(new ContextHandler());
-    private final Handler handler2 = spy(new ContextHandler());
+    private final Handler handler1 = spy(new MockContextHandler());
+    private final Handler handler2 = spy(new MockContextHandler());
 
     private final RoutingHandler handler = new RoutingHandler(ImmutableMap.of(connector1,
                                                                               handler1,
@@ -58,5 +63,12 @@ public class RoutingHandlerTest {
         handler.handle("target", baseRequest, request, response);
 
         verify(handler1).handle("target", baseRequest, request, response);
+    }
+    
+    public static class MockContextHandler extends ContextHandler {
+        @Override
+        public Server getServer() {
+            return mock(Server.class);
+        }
     }
 }
